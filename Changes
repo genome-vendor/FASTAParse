@@ -1,5 +1,10 @@
 Revision history for FASTAParse
 
+0.0.2  Thu Apr 27 15:38:37 CDT 2006 
+       Added the method "save_FASTA" to the module. No other chanegs to the
+       user interface were made.
+
+
 0.0.1  Thu Apr 13 22:51:42 CDT 2006 
        Initial release to CPAN.
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use IO::File;
-use Test::More tests => 18;
+use Test::More tests => 19;
 
 # SOURCE THE MODULE
 use_ok('FASTAParse');
@@ -56,5 +56,8 @@ ok( $sequence eq "RNVGELIQNQVRTGLARMERVVRERMTTQDVEAITPQTLINIRPVVASIKEFFGTSQLSQFM
 @known_descriptors = ('TESTED FASTA');
 ok( eq_array(\@comments, \@known_comments), "manual comments validation" ) or exit; 
 ok( eq_array(\@descriptors, \@known_descriptors), "manual descriptors validation" ) or exit; 
+
+# SAVE CHECK
+ok( $new_fasta->save_FASTA( save => '/tmp/revised.fa' ), "save to file of entry" ) or exit;
 
 __END__

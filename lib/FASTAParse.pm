@@ -4,7 +4,7 @@ package FASTAParse;
 # | AUTHOR  | Todd Wylie
 # | EMAIL   | perldev@monkeybytes.org
 
-use version; $VERSION = qv('0.0.1');
+use version; $VERSION = qv('0.0.2');
 use warnings;
 use strict;
 use Carp;
@@ -142,7 +142,7 @@ sub format_FASTA {
 # ==========================================================================
 # USAGE      : $fasta->dump_FASTA();
 # PURPOSE    : Accessor to dump the FASTA class into text.
-# RETURNS    : scalar (chunkn of FASTA text)
+# RETURNS    : scalar (chunk of FASTA text)
 # PARAMETERS : none
 # --------------------------------------------------------------------------
 sub dump_FASTA {
@@ -165,6 +165,41 @@ sub dump_FASTA {
     }
     
     return( $returnable );
+}
+
+
+# --------------------------------------------------------------------------
+# S A V E   F A S T A  (method)
+# ==========================================================================
+# USAGE      : $fasta->save_FASTA( save => '' );
+# PURPOSE    : Accessor to save the FASTA entry to a file.
+# RETURNS    : none
+# PARAMETERS : save => ''
+# --------------------------------------------------------------------------
+sub save_FASTA {
+    my ($class, %arg)  = @_;
+
+    if (!$arg{save}) { croak "save_FASTA needs SAVE attribute" }
+    
+    # Save the class information to a file:
+    my $save = new IO::File ">>$arg{save}" or croak "could not save to file $arg{save}";
+    my $returnable;
+    if (defined $class->{_id}) {
+        my $descriptors = join( " \cA", @{$class->{_descriptors}} );  # ^A delimiter
+        $returnable = ">$class->{_id} $descriptors\n";
+        foreach my $comment ( @{$class->{_comments}} ) {
+            $returnable .= ";$comment\n";
+        }
+        foreach my $sequence ( @{$class->{_sequence}} ) {
+            $returnable .= "$sequence\n";
+        }
+    }
+    else {
+        croak "ID is missing from the object";
+    }
+    print $save "$returnable";
+
+    return($class);
 }
 
 
@@ -279,7 +314,7 @@ FASTAParse - A light-weight parsing module for handling FASTA formatted sequence
 
 =head1 VERSION
 
-This document describes FASTAParse version 0.0.1
+This document describes FASTAParse version 0.0.2
 
 
 =head1 SYNOPSIS
@@ -357,6 +392,13 @@ format_FASTA: Method to manually populate the FASTA class. Only ID and SEQUENCE 
 dump_FASTA: Method to dump the FASTA object back into a text chunk, retaining formatting. Returns a scalar.
 
     my $dumped = $fasta->dump_FASTA();
+
+
+=head2 save_FASTA
+
+dump_FASTA: Method to save the FASTA entry to a specified file, retaining formatting. Multiple calls to the same file will concatenate entries in the file.
+
+    $fasta->save_FASTA( save => '/tmp/revised.fa' );
 
 
 =head2 print
