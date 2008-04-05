@@ -4,7 +4,7 @@ package FASTAParse;
 # | AUTHOR  | Todd Wylie
 # | EMAIL   | perldev@monkeybytes.org
 
-use version; $VERSION = qv('0.0.2');
+use version; $VERSION = qv('0.0.3');
 use warnings;
 use strict;
 use Carp;
@@ -28,7 +28,7 @@ sub new {
         _comments    => [],
         _sequence    => [],
     };
-    
+
     bless($self, $class);
     return($self);
 }
@@ -44,29 +44,29 @@ sub new {
 # THROWS     : croaks if no FASTA attribute or bad FASTA header
 # COMMENTS   : The user sould be passing a chunk of text (scalar) to
 #            : this method which represents 1 FASTA entry... from the
-#            : > symbol to the end of the sequence; includes line 
+#            : > symbol to the end of the sequence; includes line
 #            : returns.
 # EXAMPLE    : Example format:
-#            : >gi|55416189|gb|AAV50056.1| NADH dehydrogenase subunit 1 [Dasyurus hallucatus]   
-#            : ;Taken from nr GenBank                                                           
-#            : MFTINLLIYIIPILLAVAFLTLIERKMLGYMQFRKGPNIVGPYGLLQPFADAVKLFTKEPLRPLTSSISIFIIAPILALT 
-#            : IALTIWTPLPMPNTLLDLNLGLIFILSLSGLSVYSILWSGWASNSKYALIGALRAVAQTISYEVSLAIILLSIMLINGSF 
-#            : TLKTLSITQENLWLIITTWPLAMMWYISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFAMFFLAEYANIIAMNAITTI 
-#            : LFLGPSLTPNLSHLNTLSFMLKTLLLTMVFLWVRASYPRFRYDQLMHLLWKNFLPMTLAM                     
+#            : >gi|55416189|gb|AAV50056.1| NADH dehydrogenase subunit 1 [Dasyurus hallucatus]
+#            : ;Taken from nr GenBank
+#            : MFTINLLIYIIPILLAVAFLTLIERKMLGYMQFRKGPNIVGPYGLLQPFADAVKLFTKEPLRPLTSSISIFIIAPILALT
+#            : IALTIWTPLPMPNTLLDLNLGLIFILSLSGLSVYSILWSGWASNSKYALIGALRAVAQTISYEVSLAIILLSIMLINGSF
+#            : TLKTLSITQENLWLIITTWPLAMMWYISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFAMFFLAEYANIIAMNAITTI
+#            : LFLGPSLTPNLSHLNTLSFMLKTLLLTMVFLWVRASYPRFRYDQLMHLLWKNFLPMTLAM
 # --------------------------------------------------------------------------
 sub load_FASTA {
     my ($class, %arg) = @_;
-    
+
     # Check incoming FASTA format:
     if (!$arg{fasta})       { croak "load_FASTA needs FASTA attribute" }
     if ($arg{fasta} !~ />/) { croak "no FASTA header found for input"  }
-    
+
     # Parse sequence and load the FASTA object:
     my @lines = split( /\n/, $arg{fasta} );
     foreach my $line (@lines) {
         if ($line =~ /^>\S+/) {
             # Header line:
-            my ($id, $descriptions)   = $line =~ /^>(\S+)\s*(.+)/;
+            my ($id, $descriptions)   = $line =~ /^>(\S+)\s*(.*)/;
             $class->{_id}             = $id;
             if (defined$descriptions) {
                 @{$class->{_descriptors}} = split( /\cA/, $descriptions );
@@ -98,19 +98,19 @@ sub load_FASTA {
 #            : descriptors => []
 #            : cols        => ''
 # COMMENTS   : A user may manually load a FASTA object. Only ID and SEQUENCE
-#            : are required, all others are optional. The SEQUENCE attribute 
-#            : should be a flat, single line scalar value (i.e., a single 
+#            : are required, all others are optional. The SEQUENCE attribute
+#            : should be a flat, single line scalar value (i.e., a single
 #            : string of sequence).
 # --------------------------------------------------------------------------
 sub format_FASTA {
     my ($class, %arg) = @_;
-    
+
     # Format the incoming sequence. Sequence must be single line,
     # flatten sequence string. Check incoming FASTA format first:
     if (!$arg{sequence}) { croak "format_FASTA needs SEQUENCE attribute" }
     if (!$arg{id}      ) { croak "format_FASTA needs ID attribute"       }
     my $columns = defined $arg{cols} ? $arg{cols} : 60;  # Default is 60 cols.
-    
+
     # If incoming sequence is multi-part, join them before breaking
     # into FASTA lines:
     delete( $class->{_sequence} );
@@ -123,7 +123,7 @@ sub format_FASTA {
         push( @{$class->{_sequence}}, $line );
         $pos = $pos + $columns;
     }
-    
+
     # Descriptions, comments, etc.
     $class->{_id} = $arg{id};
     if (defined @{$arg{comments}}) {
@@ -132,7 +132,7 @@ sub format_FASTA {
     if (defined @{$arg{descriptors}}) {
         @{$class->{_descriptors}} = @{$arg{descriptors}};
     }
-    
+
     return( $class );
 }
 
@@ -147,11 +147,11 @@ sub format_FASTA {
 # --------------------------------------------------------------------------
 sub dump_FASTA {
     my $class = shift;
-    
+
     # Dump the class in scalar context:
     my $returnable;
     if (defined $class->{_id}) {
-        my $descriptors = join( " \cA", @{$class->{_descriptors}} );  # ^A delimiter
+        my $descriptors = join( "\cA", @{$class->{_descriptors}} );  # ^A delimiter
         $returnable = ">$class->{_id} $descriptors\n";
         foreach my $comment ( @{$class->{_comments}} ) {
             $returnable .= ";$comment\n";
@@ -163,7 +163,7 @@ sub dump_FASTA {
     else {
         croak "ID is missing from the object";
     }
-    
+
     return( $returnable );
 }
 
@@ -180,12 +180,12 @@ sub save_FASTA {
     my ($class, %arg)  = @_;
 
     if (!$arg{save}) { croak "save_FASTA needs SAVE attribute" }
-    
+
     # Save the class information to a file:
     my $save = new IO::File ">>$arg{save}" or croak "could not save to file $arg{save}";
     my $returnable;
     if (defined $class->{_id}) {
-        my $descriptors = join( " \cA", @{$class->{_descriptors}} );  # ^A delimiter
+        my $descriptors = join( "\cA", @{$class->{_descriptors}} );  # ^A delimiter
         $returnable = ">$class->{_id} $descriptors\n";
         foreach my $comment ( @{$class->{_comments}} ) {
             $returnable .= ";$comment\n";
@@ -217,7 +217,7 @@ sub print {
     # Print the class to STDOUT:
     my $printable;
     if (defined $class->{_id}) {
-        my $descriptors = join( " \cA", @{$class->{_descriptors}} );  # ^A delimiter
+        my $descriptors = join( "\cA", @{$class->{_descriptors}} );  # ^A delimiter
         $printable = ">$class->{_id} $descriptors\n";
         foreach my $comment ( @{$class->{_comments}} ) {
             $printable .= ";$comment\n";
@@ -230,7 +230,7 @@ sub print {
     else {
         croak "ID is missing from the object";
     }
-    
+
     return( $class );
 }
 
@@ -266,7 +266,7 @@ sub sequence {
     my $class = shift;
     if (defined $class->{_sequence} ) {
         my $sequence = join(  "", @{$class->{_sequence}} );
-        return( $sequence );   
+        return( $sequence );
     }
     else {
         croak "SEQUENCE does not exist in object";
@@ -314,7 +314,7 @@ FASTAParse - A light-weight parsing module for handling FASTA formatted sequence
 
 =head1 VERSION
 
-This document describes FASTAParse version 0.0.2
+This document describes FASTAParse version 0.0.3
 
 
 =head1 SYNOPSIS
@@ -333,11 +333,11 @@ This document describes FASTAParse version 0.0.2
     # Loading a FASTA object from a block of captured text:
     use FASTAParse;
     my $text = "
-    >gi|55416189|gb|AAV50056.1| NADH dehydrogenase subunit 1 [Dasyurus hallucatus]   
-    ;Taken from nr GenBank                                                           
-    MFTINLLIYIIPILLAVAFLTLIERKMLGYMQFRKGPNIVGPYGLLQPFADAVKLFTKEPLRPLTSSISIFIIAPILALT 
-    IALTIWTPLPMPNTLLDLNLGLIFILSLSGLSVYSILWSGWASNSKYALIGALRAVAQTISYEVSLAIILLSIMLINGSF 
-    TLKTLSITQENLWLIITTWPLAMMWYISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFAMFFLAEYANIIAMNAITTI 
+    >gi|55416189|gb|AAV50056.1| NADH dehydrogenase subunit 1 [Dasyurus hallucatus]
+    ;Taken from nr GenBank
+    MFTINLLIYIIPILLAVAFLTLIERKMLGYMQFRKGPNIVGPYGLLQPFADAVKLFTKEPLRPLTSSISIFIIAPILALT
+    IALTIWTPLPMPNTLLDLNLGLIFILSLSGLSVYSILWSGWASNSKYALIGALRAVAQTISYEVSLAIILLSIMLINGSF
+    TLKTLSITQENLWLIITTWPLAMMWYISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFAMFFLAEYANIIAMNAITTI
     LFLGPSLTPNLSHLNTLSFMLKTLLLTMVFLWVRASYPRFRYDQLMHLLWKNFLPMTLAM
     ";
     my $fasta = FASTAParse->new();
@@ -356,7 +356,7 @@ FASTAParse is pretty simple in that it does one of two things: 1) loads a FASTA 
  http://blast.wustl.edu/doc/FAQ-Indexing.html
 
 
-=head1 INTERFACE 
+=head1 INTERFACE
 
 =head2 new
 
@@ -376,7 +376,7 @@ load_FASTA: Method to populate the FASTA class with information. The "fasta" att
 
 =head2 format_FASTA
 
-format_FASTA: Method to manually populate the FASTA class. Only ID and SEQUENCE are required. The SEQUENCE attribute should be a single, non-gapped line of text. The COLS attribute may be set to alter the column which line-wraps occur; default will be 60, 0 indicates no wrapping, and >80 is not recommeded as a general practice. The COMMENTS attribute is provided for placement after the header line: one or more comments, distinguished by a semi-colon at the beginning of the line, may occur. Most databases and bioinformatics applications do not recognize these comments so their use is discouraged, but they are part of the official format. 
+format_FASTA: Method to manually populate the FASTA class. Only ID and SEQUENCE are required. The SEQUENCE attribute should be a single, non-gapped line of text. The COLS attribute may be set to alter the column which line-wraps occur; default will be 60, 0 indicates no wrapping, and >80 is not recommeded as a general practice. The COMMENTS attribute is provided for placement after the header line: one or more comments, distinguished by a semi-colon at the beginning of the line, may occur. Most databases and bioinformatics applications do not recognize these comments so their use is discouraged, but they are part of the official format.
 
     $fasta->format_FASTA(
                          id          => 'example_0.0.1',
@@ -471,9 +471,9 @@ L<http://rt.cpan.org>.
 
 =head1 AUTHOR
 
-Todd Wylie  
+Todd Wylie
 
-C<< <perldev@monkeybytes.org> >>  
+C<< <perldev@monkeybytes.org> >>
 
 L<< http://www.monkeybytes.org >>
 
