@@ -1,0 +1,24 @@
+Source: libfastaparse-perl
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 7), perl (>= 5.10) | libmodule-build-perl
+Build-Depends-Indep: perl (>= 5.9.0)
+Maintainer: Randy Hancock <rhancock@>
+Standards-Version: 3.8.3
+Homepage: http://search.cpan.org/dist/FASTAParse/
+
+Package: libfastaparse-perl
+Architecture: all
+Depends: ${perl:Depends}, ${misc:Depends}, perl (>= 5.9.0)
+Description: A light-weight parsing module for handling FASTA formatted sequence within larger perl applications.
+ FASTAParse is pretty simple in that it does one of two things: 1) loads a
+ FASTA object from a chunk of text; 2) formats a FASTA object given explicit
+ user input. See SYNOPSIS for example code for both functions. Once populated,
+ individual sections of the FASTA entry may be pulled from the object. For
+ further information on FASTA format, please see:
+ .
+ http://en.wikipedia.org/wiki/Fasta_format
+ .
+ http://blast.wustl.edu/doc/FAQ-Indexing.html
+ .
+ This description was automagically extracted from the module by dh-make-perl.
